@@ -39,3 +39,17 @@ type FooterLinkProps = {
   linkText: string;
   href: string;
 };
+type WelcomeEmailData = {
+  email: string;
+  name: string;
+  intro: string;
+};
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+type SignInFormData = {
+  email: string;
+  password: string;
+};

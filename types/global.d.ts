@@ -53,3 +53,42 @@ type SignInFormData = {
   email: string;
   password: string;
 };
+type RawNewsArticle = {
+  id: number;
+  headline?: string;
+  summary?: string;
+  source?: string;
+  url?: string;
+  datetime?: number;
+  image?: string;
+  category?: string;
+  related?: string;
+};
+type MarketNewsArticle = {
+  id: number;
+  headline: string;
+  summary: string;
+  source: string;
+  url: string;
+  datetime: number;
+  category: string;
+  related: string;
+  image?: string;
+};
+type StockWithWatchlistStatus = Stock & {
+  isInWatchlist: boolean;
+};
+type FinnhubSearchResult = {
+  symbol: string;
+  description: string;
+  displaySymbol?: string;
+  type: string;
+};
+
+type FinnhubSearchResponse = {
+  count: number;
+  result: FinnhubSearchResult[];
+};
+type UserForNewsEmail = {
+  email: string;
+};

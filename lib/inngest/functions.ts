@@ -61,7 +61,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
   {
     id: "daily-new-summary",
   },
-  [{ event: "app/send.daily.new" }, { cron: "0 12 * * " }],
+  [{ event: "app/send.daily.new" }, { cron: "0 12 * * * " }],
 
   async ({ step }) => {
     //setp.1 : get all users forn new delivery

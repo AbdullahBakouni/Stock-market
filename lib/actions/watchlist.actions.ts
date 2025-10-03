@@ -2,6 +2,7 @@
 
 import { Watchlist } from "@/models/watchlist.model";
 import { connectToDatabase } from "../mongodb";
+import { ObjectId } from "mongodb";
 
 export async function getWatchlistSymbolsByEmail(
   email: string,
@@ -30,3 +31,96 @@ export async function getWatchlistSymbolsByEmail(
     return [];
   }
 }
+
+export const createWatchList = async ({
+  userId,
+  symbol,
+  company,
+}: {
+  userId: string | undefined;
+  symbol: string;
+  company: string;
+}) => {
+  try {
+    const mongoose = await connectToDatabase(); // Assuming connectToDatabase is defined elsewhere
+    const db = mongoose.connection.db;
+    if (!db) throw new Error("MongoDB connection not found");
+
+    const user = await db
+      .collection("user")
+      .findOne<{ _id: ObjectId; name: string; email: string }>({
+        _id: new ObjectId(userId),
+      });
+    if (!user) return { success: false, message: "User not found" }; // Consistent return
+
+    const existsWatchList = await db
+      .collection("watchlists")
+      .findOne({ userId: userId, symbol: symbol });
+    if (existsWatchList)
+      return { success: false, message: "Stock already added" };
+
+    const newWatchlist = await db.collection("watchlists").insertOne({
+      userId: userId,
+      symbol: symbol,
+      company: company,
+      addedAt: new Date(),
+    });
+
+    if (newWatchlist.acknowledged)
+      // More precise check
+      return { success: true, message: "Successfully created a new watchlist" }; // Typo fixed and improved message
+    else return { success: false, message: "Failed to create new watchlist" }; // Handle unacknowledged write
+  } catch (err: any) {
+    // Type 'any' for err for flexibility in error handling
+    console.error("Create a Watchlist error:", err);
+    return {
+      success: false,
+      message: `An error occurred: ${err.message || err}`,
+    }; // Return error object
+  }
+};
+
+export const fetchWatchListBerUser = async ({ userId }: { userId: string }) => {
+  try {
+    const mongoose = await connectToDatabase();
+    const db = mongoose.connection.db;
+    if (!db) throw new Error("MongoDB connection not found");
+    const watchlist = await db
+      .collection("watchlists")
+      .find({ userId: userId })
+      .toArray();
+
+    const watchlistSymbols = watchlist.map((w: any) => w.symbol);
+    if (watchlist) return { success: true, watchlistSymbols: watchlistSymbols };
+  } catch (err: any) {
+    console.error("Fetching Watchlist is Field:", err);
+    return {
+      success: false,
+      message: `An error occurred: ${err.message || err}`,
+    }; // Return error object
+  }
+};
+
+export const deleteWatchLisForUser = async ({
+  userId,
+  symbol,
+}: {
+  userId: string;
+  symbol: string;
+}) => {
+  try {
+    const mongoose = await connectToDatabase();
+    const db = mongoose.connection.db;
+    if (!db) throw new Error("MongoDB connection not found");
+    const result = await db
+      .collection("watchlists")
+      .deleteOne({ userId, symbol: symbol.toUpperCase() });
+    if (result) return { success: true, message: "Deleting Success" };
+  } catch (err: any) {
+    console.error("Error Deleting a WatchList:", err);
+    return {
+      success: false,
+      message: `An error occurred: ${err.message || err}`,
+    }; // Return error object
+  }
+};

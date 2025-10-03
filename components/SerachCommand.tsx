@@ -11,6 +11,8 @@ import { Loader2, TrendingUp } from "lucide-react";
 import { useStockStore } from "@/lib/store/stock-store";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
+import WatchlistButton from "./WatchlistButton";
+import { useUserStore } from "@/lib/store/user-store";
 
 const SerachCommand = ({
   renderAs = "button",
@@ -24,6 +26,7 @@ const SerachCommand = ({
   const [searchTerm, setSearchTerm] = useState("");
   const isSearchMode = !!searchTerm.trim();
   const displayStocks = isSearchMode ? stocks : stocks?.slice(0, 10);
+  const session = useUserStore((state) => state.session);
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -35,10 +38,16 @@ const SerachCommand = ({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
   useEffect(() => {
-    fetchStocks();
-  }, [fetchStocks]);
+    if (session?.user?.id) {
+      fetchStocks({ userId: session.user.id });
+    }
+  }, [session, fetchStocks]);
+
   const handleSearch = async () => {
-    await fetchStocks(searchTerm.trim() || undefined);
+    await fetchStocks({
+      query: searchTerm.trim() || undefined,
+      userId: session?.user?.id,
+    });
   };
 
   const debouncedSearch = useDebounce(handleSearch, 300);
@@ -46,6 +55,11 @@ const SerachCommand = ({
   useEffect(() => {
     debouncedSearch();
   }, [searchTerm]);
+
+  const handleSelectStock = () => {
+    setOpen(false);
+    setSearchTerm("");
+  };
   return (
     <>
       {renderAs === "text" ? (
@@ -60,9 +74,9 @@ const SerachCommand = ({
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        className="search-dialog"
+        className="search-dialog text-white"
       >
-        <div className="search-field">
+        <div className="search-field text-white">
           <CommandInput
             value={searchTerm}
             onValueChange={setSearchTerm}
@@ -77,7 +91,7 @@ const SerachCommand = ({
               Loading stocks...
             </CommandEmpty>
           ) : displayStocks?.length === 0 ? (
-            <div className="search-list-indicator">
+            <div className="search-list-indicator text-white">
               {isSearchMode ? "No results found" : "No stocks available"}
             </div>
           ) : (
@@ -90,7 +104,7 @@ const SerachCommand = ({
                 <li key={stock.symbol} className="search-item">
                   <Link
                     href={`/stocks/${stock.symbol}`}
-                    // onClick={handleSelectStock}
+                    onClick={handleSelectStock}
                     className="search-item-link"
                   >
                     <TrendingUp className="h-4 w-4 text-gray-500" />
@@ -100,7 +114,11 @@ const SerachCommand = ({
                         {stock.symbol} | {stock.exchange} | {stock.type}
                       </div>
                     </div>
-                    {/*<Star />*/}
+                    <WatchlistButton
+                      symbol={stock.symbol.toUpperCase()}
+                      company={stock.name}
+                      type="icon"
+                    />
                   </Link>
                 </li>
               ))}

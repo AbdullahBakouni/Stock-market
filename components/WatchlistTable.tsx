@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useWatchlistStore } from "@/lib/store/watchlist-store";
 import { useEffect } from "react";
 import { useUserStore } from "@/lib/store/user-store";
+import Link from "next/link";
 
 export function WatchlistTable() {
   const session = useUserStore((state) => state.session);
@@ -83,13 +84,24 @@ export function WatchlistTable() {
                   <span className="text-sm">{w.peRatio}</span>
                 </td>
                 <td className="px-6 py-4">
-                  <Button
+                  {/*<Button
                     variant="outline"
                     size="sm"
                     className="bg-[#FF824333] text-[#FF8243]  font-medium p-3 border-0 hover:bg-[#FF824333]/90 hover:text-[#FF8243] cursor-pointer"
                   >
                     Add Alert
-                  </Button>
+                  </Button>*/}
+                  <Link
+                    href={`/alerts/new?symbol=${w.symbol}&name=${encodeURIComponent(w.company)}`}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="add-alert-bt"
+                    >
+                      Add Alert
+                    </Button>
+                  </Link>
                 </td>
               </tr>
             ))}

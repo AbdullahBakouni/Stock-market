@@ -379,6 +379,9 @@
     .alert-delete-btn {
         @apply text-gray-400 rounded-full hover:bg-red-600/15 bg-transparent cursor-pointer transition-colors;
     }
+    .add-alert-bt {
+        @apply bg-[#FF824333] text-[#FF8243]  font-medium p-3 border-0 hover:bg-[#FF824333]/90 hover:text-[#FF8243] cursor-pointer;
+    }
 }
 
 /* Market News Component Styles */

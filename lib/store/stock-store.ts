@@ -14,7 +14,7 @@ interface ChartData {
   prevClose?: number | null;
 }
 interface StockWithWatchlistStatus {
-  _id: string;
+  _id?: string;
   symbol: string;
   name: string;
   exchange: string;
@@ -31,6 +31,7 @@ interface StockState {
   stocks: StockWithWatchlistStatus[];
   watchlistSymbols: string[];
   loading: boolean;
+  loadingSymbol: null | string;
   error: string | null;
   fetchStocks: (params?: { query?: string; userId?: string }) => Promise<void>;
   addToWatchlist: (
@@ -44,6 +45,7 @@ export const useStockStore = create<StockState>((set, get) => ({
   stocks: [],
   watchlistSymbols: [],
   loading: false,
+  loadingSymbol: null,
   error: null,
 
   fetchStocks: async ({ query, userId } = {}) => {
@@ -77,44 +79,69 @@ export const useStockStore = create<StockState>((set, get) => ({
   },
 
   addToWatchlist: async (userId, stock) => {
-    const result = await createWatchList({
-      userId,
-      symbol: stock.symbol,
-      company: stock.name,
-    });
+    set({ loadingSymbol: stock.symbol, error: null });
+    try {
+      const result = await createWatchList({
+        userId,
+        symbol: stock.symbol,
+        company: stock.name,
+      });
 
-    if (!result.success || !result.stock) return;
+      if (!result.success || !result.stock) return;
 
-    const enrichedItem = {
-      ...result.stock,
-      change:
-        calculateChangePercent(
-          result.stock.chartData ?? {},
-          result.stock.price ?? null,
-        ) ?? undefined,
-      marketCap: formatMarketCap(result.stock.marketCap ?? null),
-    };
-    set((state) => ({
-      watchlistSymbols: [...state.watchlistSymbols, stock.symbol.toUpperCase()],
-      stocks: state.stocks.map((s) =>
-        s.symbol === stock.symbol ? { ...s, isInWatchlist: true } : s,
-      ),
-    }));
-    const watchlistStore = useWatchlistStore.getState();
-    watchlistStore.addItemToWatchlist(enrichedItem);
+      const enrichedItem = {
+        ...result.stock,
+        change:
+          calculateChangePercent(
+            result.stock.chartData ?? {},
+            result.stock.price ?? null,
+          ) ?? undefined,
+        marketCap: formatMarketCap(result.stock.marketCap ?? null),
+      };
+      set((state) => ({
+        watchlistSymbols: [
+          ...state.watchlistSymbols,
+          stock.symbol.toUpperCase(),
+        ],
+        stocks: state.stocks.map((s) =>
+          s.symbol === stock.symbol ? { ...s, isInWatchlist: true } : s,
+        ),
+        loadingSymbol: null,
+      }));
+      const watchlistStore = useWatchlistStore.getState();
+      watchlistStore.addItemToWatchlist(enrichedItem);
+    } catch (err: any) {
+      console.error("Error Add stocks:", err);
+      set({
+        error: err.message ?? "Something went wrong",
+        stocks: [],
+        loadingSymbol: null,
+      });
+    }
   },
 
   removeFromWatchlist: async (userId, symbol) => {
-    await deleteWatchLisForUser({ userId, symbol });
-    set((state) => ({
-      watchlistSymbols: state.watchlistSymbols.filter(
-        (s) => s !== symbol.toUpperCase(),
-      ),
-      stocks: state.stocks.map((s) =>
-        s.symbol === symbol ? { ...s, isInWatchlist: false } : s,
-      ),
-    }));
-    const watchlistStore = useWatchlistStore.getState();
-    watchlistStore.removeItemFromWatchlist(symbol);
+    set({ loadingSymbol: symbol, error: null });
+    try {
+      await deleteWatchLisForUser({ userId, symbol });
+      set((state) => ({
+        watchlistSymbols: state.watchlistSymbols.filter(
+          (s) => s !== symbol.toUpperCase(),
+        ),
+        stocks: state.stocks.map((s) =>
+          s.symbol === symbol ? { ...s, isInWatchlist: false } : s,
+        ),
+        loadingSymbol: null,
+      }));
+      const watchlistStore = useWatchlistStore.getState();
+      watchlistStore.removeItemFromWatchlist(symbol);
+    } catch (err: any) {
+      console.error("Error delete stocks:", err);
+      set({
+        error: err.message ?? "Something went wrong",
+        stocks: [],
+        loadingSymbol: null,
+      });
+    }
   },
 }));

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
 import WatchlistButton from "./WatchlistButton";
 import { useUserStore } from "@/lib/store/user-store";
+import { useUIStore } from "@/lib/store/ui-srore";
 
 const SerachCommand = ({
   renderAs = "button",
@@ -22,6 +23,7 @@ const SerachCommand = ({
   label: string;
 }) => {
   const { stocks, fetchStocks, loading, error } = useStockStore();
+  const { triggerSearch, resetSearchTrigger } = useUIStore();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const isSearchMode = !!searchTerm.trim();
@@ -42,7 +44,12 @@ const SerachCommand = ({
       fetchStocks({ userId: session.user.id });
     }
   }, [session, fetchStocks]);
-
+  useEffect(() => {
+    if (triggerSearch) {
+      setOpen(true);
+      resetSearchTrigger(); // reset trigger after opening
+    }
+  }, [triggerSearch, resetSearchTrigger]);
   const handleSearch = async () => {
     await fetchStocks({
       query: searchTerm.trim() || undefined,

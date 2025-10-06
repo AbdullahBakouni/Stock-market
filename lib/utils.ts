@@ -41,3 +41,37 @@ export const formatArticle = (
   category: isCompanyNews ? "company" : article.category || "general",
   related: isCompanyNews ? symbol! : article.related || "",
 });
+
+export function calculateChangePercent(
+  chartData: ChartData,
+  currentPrice: number | null,
+): number | null {
+  if (!chartData?.prevClose || currentPrice == null) return null;
+
+  const changePercent =
+    ((currentPrice - chartData.prevClose) / chartData.prevClose) * 100;
+  return Number(changePercent.toFixed(2));
+}
+export function formatMarketCap(
+  value: number | string | null | undefined,
+): string {
+  if (value == null) return "N/A";
+
+  // Convert string to number if necessary
+  const num = typeof value === "string" ? parseFloat(value) : value;
+
+  // If parsing failed or NaN, return N/A
+  if (isNaN(num)) return "N/A";
+
+  if (num >= 1_000_000_000_000) {
+    return (num / 1_000_000_000_000).toFixed(2) + "T";
+  } else if (num >= 1_000_000_000) {
+    return (num / 1_000_000_000).toFixed(2) + "B";
+  } else if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(2) + "M";
+  } else if (num >= 1_000) {
+    return (num / 1_000).toFixed(2) + "K";
+  } else {
+    return num.toString();
+  }
+}

@@ -5,13 +5,26 @@ import {
   deleteWatchLisForUser,
   fetchWatchListBerUser,
 } from "../actions/watchlist.actions";
-
+import { useWatchlistStore } from "./watchlist-store";
+import { calculateChangePercent, formatMarketCap } from "../utils";
+interface ChartData {
+  open?: number | null;
+  high?: number | null;
+  low?: number | null;
+  prevClose?: number | null;
+}
 interface StockWithWatchlistStatus {
+  _id: string;
   symbol: string;
   name: string;
   exchange: string;
   type: string;
   isInWatchlist: boolean;
+  price?: number | null;
+  marketCap?: string | null;
+  peRatio?: number | null;
+  change?: number;
+  chartData?: ChartData;
 }
 
 interface StockState {
@@ -64,17 +77,31 @@ export const useStockStore = create<StockState>((set, get) => ({
   },
 
   addToWatchlist: async (userId, stock) => {
-    await createWatchList({
+    const result = await createWatchList({
       userId,
       symbol: stock.symbol,
       company: stock.name,
     });
+
+    if (!result.success || !result.stock) return;
+
+    const enrichedItem = {
+      ...result.stock,
+      change:
+        calculateChangePercent(
+          result.stock.chartData ?? {},
+          result.stock.price ?? null,
+        ) ?? undefined,
+      marketCap: formatMarketCap(result.stock.marketCap ?? null),
+    };
     set((state) => ({
       watchlistSymbols: [...state.watchlistSymbols, stock.symbol.toUpperCase()],
       stocks: state.stocks.map((s) =>
         s.symbol === stock.symbol ? { ...s, isInWatchlist: true } : s,
       ),
     }));
+    const watchlistStore = useWatchlistStore.getState();
+    watchlistStore.addItemToWatchlist(enrichedItem);
   },
 
   removeFromWatchlist: async (userId, symbol) => {
@@ -87,5 +114,7 @@ export const useStockStore = create<StockState>((set, get) => ({
         s.symbol === symbol ? { ...s, isInWatchlist: false } : s,
       ),
     }));
+    const watchlistStore = useWatchlistStore.getState();
+    watchlistStore.removeItemFromWatchlist(symbol);
   },
 }));

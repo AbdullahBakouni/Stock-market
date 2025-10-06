@@ -192,3 +192,42 @@ export const searchStocks = cache(
     }
   },
 );
+
+export const fetchStockData = async (symbol: string) => {
+  try {
+    const [quoteData, metricsData] = await Promise.all([
+      fetchJSON<{ c: number; o: number; h: number; l: number; pc: number }>(
+        `${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
+        60,
+      ),
+      fetchJSON<{
+        metric: { marketCapitalization?: number; peNormalizedAnnual?: number };
+      }>(
+        `${FINNHUB_BASE_URL}/stock/metric?symbol=${symbol}&metric=all&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
+        300,
+      ),
+    ]);
+
+    const price = quoteData?.c ?? null;
+    const marketCap = metricsData?.metric?.marketCapitalization ?? null;
+    const peRatio = metricsData?.metric?.peNormalizedAnnual ?? null;
+    const chartData = quoteData
+      ? {
+          open: quoteData.o,
+          high: quoteData.h,
+          low: quoteData.l,
+          prevClose: quoteData.pc,
+        }
+      : null;
+
+    return {
+      price,
+      marketCap,
+      peRatio,
+      chartData,
+    };
+  } catch (error: any) {
+    console.error("Errro Get Data:", error);
+    throw new Error("Error Get Data From Finnube");
+  }
+};

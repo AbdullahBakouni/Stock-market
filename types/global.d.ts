@@ -105,3 +105,6 @@ type WatchlistButtonProps = {
   type?: "button" | "icon";
   onWatchlistChange?: (symbol: string, isAdded: boolean) => void;
 };
+type ChartData = {
+  prevClose?: number | null;
+};

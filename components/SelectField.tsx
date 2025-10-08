@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const SelectField = ({
   name,
@@ -16,10 +17,14 @@ const SelectField = ({
   control,
   error,
   required = false,
+  isAlertForm,
 }: SelectFieldProps) => {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={name} className="form-label">
+    <div className={cn(isAlertForm ? "" : "space-y-2")}>
+      <Label
+        htmlFor={name}
+        className={cn(isAlertForm ? "alert-form-label" : "form-label")}
+      >
         {label}
       </Label>
 
@@ -31,7 +36,11 @@ const SelectField = ({
         }}
         render={({ field }) => (
           <Select value={field.value} onValueChange={field.onChange}>
-            <SelectTrigger className="select-trigger">
+            <SelectTrigger
+              className={cn(
+                isAlertForm ? "select-alert-trigger" : "select-trigger",
+              )}
+            >
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-600 text-white">

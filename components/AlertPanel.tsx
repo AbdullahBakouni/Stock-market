@@ -2,6 +2,7 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export function AlertsPanel() {
   interface Alert {
@@ -73,11 +74,18 @@ export function AlertsPanel() {
       bgColor: "bg-red-600",
     },
   ];
+  const router = useRouter();
+  const handlepush = () => {
+    router.push("/alerts/new");
+  };
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold text-white">Alerts</h2>
-        <Button className="bg-[#FDD458] hover:bg-[#FDD458]/90 text-[#050505] font-bold rounded h-9 cursor-pointer">
+        <Button
+          className="bg-[#FDD458] hover:bg-[#FDD458]/90 text-[#050505] font-bold rounded h-9 cursor-pointer"
+          onClick={handlepush}
+        >
           Create Alert
         </Button>
       </div>

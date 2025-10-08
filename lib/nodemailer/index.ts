@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import {
   NEWS_SUMMARY_EMAIL_TEMPLATE,
   WELCOME_EMAIL_TEMPLATE,
-} from "./templates";
+} from "./templates.ts";
 export const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -54,5 +54,24 @@ export const sendNewsSummaryEmail = async ({
     html: htmlTemplate,
   };
 
+  await transporter.sendMail(mailOptions);
+};
+
+export const sendFininctiolsDetails = async ({
+  email,
+  subject,
+  html,
+}: {
+  email: string | undefined;
+  subject: string;
+  html: string;
+}): Promise<void> => {
+  const mailOptions = {
+    from: `'Signalist' <signalist@bakouni.com>`,
+    to: email,
+    subject: subject,
+    text: `Today's market news summary from Signalist`,
+    html: html,
+  };
   await transporter.sendMail(mailOptions);
 };

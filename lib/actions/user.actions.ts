@@ -1,6 +1,7 @@
 "use server";
 
-import { connectToDatabase } from "../mongodb";
+import { ObjectId } from "mongodb";
+import { connectToDatabase } from "../mongodb.ts";
 
 export const getAllUsersForNewsEmail = async () => {
   try {
@@ -26,5 +27,20 @@ export const getAllUsersForNewsEmail = async () => {
   } catch (e) {
     console.error("Error Fetching users for new emails", e);
     return [];
+  }
+};
+
+export const fetchUserById = async (userId: string) => {
+  const mongoose = await connectToDatabase();
+  const db = mongoose.connection.db;
+  if (!db) throw new Error("Mongose connectiion Field");
+  const user = await db
+    .collection("user")
+    .findOne<{ _id: ObjectId; name: string; email: string }>({
+      _id: new ObjectId(userId),
+    });
+  if (!user) return { success: false, message: "User not found" };
+  else {
+    return { success: true, user: user };
   }
 };

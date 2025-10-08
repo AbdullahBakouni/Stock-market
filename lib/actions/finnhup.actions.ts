@@ -1,7 +1,7 @@
 "use server";
 
-import { getDateRange, validateArticle, formatArticle } from "@/lib/utils";
-import { POPULAR_STOCK_SYMBOLS } from "@/lib/constants";
+import { getDateRange, validateArticle, formatArticle } from "../utils.ts";
+import { POPULAR_STOCK_SYMBOLS } from "../constants.ts";
 import { cache } from "react";
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
@@ -231,3 +231,40 @@ export const fetchStockData = async (symbol: string) => {
     throw new Error("Error Get Data From Finnube");
   }
 };
+export interface StockData {
+  price: number;
+  marketCap: number;
+}
+
+export async function getCurrentStockData(
+  stockSymbol: string,
+): Promise<StockData> {
+  try {
+    const quote = await fetchJSON<{
+      c: number; // current price
+      h: number; // high price of the day
+      l: number; // low price of the day
+      o: number; // open price of the day
+      pc: number; // previous close
+    }>(
+      `${FINNHUB_BASE_URL}/quote?symbol=${stockSymbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
+    );
+    const profile = await fetchJSON<{
+      marketCapitalization: number;
+      shareOutstanding: number;
+      name: string;
+    }>(
+      `${FINNHUB_BASE_URL}/stock/profile2?symbol=${stockSymbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
+    );
+    return {
+      price: quote.c,
+      marketCap: profile.marketCapitalization,
+    };
+  } catch (error) {
+    console.error("Error fetching stock data:", error);
+    return {
+      price: 0,
+      marketCap: 0,
+    };
+  }
+}

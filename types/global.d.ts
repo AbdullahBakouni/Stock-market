@@ -7,7 +7,23 @@ type SignUpFormData = {
   riskTolerance: string;
   preferredIndustry: string;
 };
+type AlertFormData = {
+  alertName: string;
+  stockIdentifier: string;
+  threshold: number;
+  alertType: string;
+  conditionType: string;
+  frequencyType: string;
+};
 type CountrySelectProps = {
+  name: string;
+  label: string;
+  control: Control;
+  error?: FieldError;
+  required?: boolean;
+};
+
+type StocksSelectProps = {
   name: string;
   label: string;
   control: Control;
@@ -17,22 +33,25 @@ type CountrySelectProps = {
 type FormInputProps = {
   name: string;
   label: string;
-  placeholder: string;
+  placeholder?: string;
   type?: string;
   register: UseFormRegister;
   error?: FieldError;
   validation?: RegisterOptions;
   disabled?: boolean;
   value?: string;
+  isAlertForm?: boolean;
+  step?: string;
 };
 type SelectFieldProps = {
   name: string;
   label: string;
-  placeholder: string;
+  placeholder?: string;
   options: readonly Option[];
   control: Control;
   error?: FieldError;
   required?: boolean;
+  isAlertForm?: boolean;
 };
 type FooterLinkProps = {
   text: string;

@@ -304,3 +304,17 @@ export const COMPANY_FINANCIALS_WIDGET_CONFIG = (symbol: string) => ({
   displayMode: "regular",
   largeChartUrl: "",
 });
+export const ALERTS_TYPES = [
+  { value: "price", label: "Price" },
+  { value: "marketCap", label: "MarketCap" },
+];
+export const ALERTS_CONDITIONS = [
+  { value: "greater", label: "Greater than (&gt;)" },
+  { value: "less", label: "Less than (&lt;)" },
+  { value: "equal", label: "Equal to (=)" },
+];
+export const ALERTS_FREQUENCY = [
+  { value: "once-per-minute", label: "Once per minute" },
+  { value: "once-per-hour", label: "Once per Hour" },
+  { value: "once-per-day", label: "Once per Day" },
+];

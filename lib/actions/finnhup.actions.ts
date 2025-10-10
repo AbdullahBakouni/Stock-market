@@ -1,6 +1,11 @@
 "use server";
 
-import { getDateRange, validateArticle, formatArticle } from "../utils.ts";
+import {
+  getDateRange,
+  validateArticle,
+  formatArticle,
+  timeAgoFromUnix,
+} from "../utils.ts";
 import { POPULAR_STOCK_SYMBOLS } from "../constants.ts";
 import { cache } from "react";
 import redis from "../redis/redis.ts";
@@ -302,4 +307,75 @@ export async function fetchStockChange(symbol: string): Promise<number | null> {
     console.error(`Error fetching logo for ${symbol}:`, e);
     return null;
   }
+}
+
+export interface NewsArticle {
+  id: string;
+  ticker: string;
+  title: string;
+  source: string;
+  timeAgo: string;
+  preview: string;
+  url: string;
+  datetime?: number;
+}
+
+export async function getDailyNews(
+  symbols: string[],
+  page: number = 1,
+  limit: number = 10,
+): Promise<{ articles: NewsArticle[]; total: number }> {
+  // Limit date range (e.g. last 7 days)
+  const today = new Date();
+  const from = new Date(today);
+  from.setDate(today.getDate() - 7);
+  const fromStr = from.toISOString().split("T")[0];
+  const toStr = today.toISOString().split("T")[0];
+
+  // Fetch all symbols in parallel
+  const allNews = await Promise.all(
+    symbols.map(async (symbol) => {
+      const url = `${FINNHUB_BASE_URL}/company-news?symbol=${symbol}&from=${fromStr}&to=${toStr}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`;
+      try {
+        const data = await fetchJSON<
+          {
+            headline: string;
+            source: string;
+            datetime: number;
+            summary: string;
+            id: number;
+            url: string;
+          }[]
+        >(url, 3600); // revalidate hourly
+
+        // Map Finnhub data to your internal format
+        return data.map((n) => ({
+          id: crypto.randomUUID(),
+          ticker: symbol,
+          title: n.headline,
+          source: n.source,
+          timeAgo: timeAgoFromUnix(n.datetime),
+          preview: n.summary,
+          url: n.url,
+          datetime: n.datetime,
+        }));
+      } catch (e) {
+        console.error(`Error fetching news for ${symbol}:`, e);
+        return [];
+      }
+    }),
+  );
+
+  const flat = allNews.flat();
+
+  // Sort newest first
+  const sorted = flat.sort((a, b) => (b.datetime ?? 0) - (a.datetime ?? 0));
+
+  // Pagination
+  const total = sorted.length;
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const paged = sorted.slice(start, end);
+
+  return { articles: paged, total };
 }

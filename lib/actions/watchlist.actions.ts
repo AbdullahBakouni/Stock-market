@@ -84,6 +84,7 @@ export const createWatchList = async ({
           addedAt: new Date(),
         },
       };
+      revalidatePath("/watchlist");
     } else {
       return { success: false, message: "Failed to create new watchlist" };
     } // Handle unacknowledged write

@@ -1,9 +1,17 @@
 import AddStockButton from "@/components/AddStockButton";
 import { AlertsPanel } from "@/components/AlertPanel";
-import { NewsSection } from "@/components/NewsSection";
+import NewsSection from "@/components/NewsSection";
 import { WatchlistTable } from "@/components/WatchlistTable";
+import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
+import { auth } from "@/lib/better-auth/auth";
+import { headers } from "next/headers";
+import { use } from "react";
 
-const WatchListPage = async () => {
+const WatchListPage = () => {
+  const session = use(
+    auth.api.getSession({ headers: headers() as unknown as Headers }),
+  );
+  const symbols = use(getWatchlistSymbolsByEmail(session?.user.email));
   return (
     <main className="container mx-auto px-6 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -25,7 +33,7 @@ const WatchListPage = async () => {
 
       {/* News Section */}
       <div className="mt-12">
-        <NewsSection />
+        <NewsSection symbols={symbols} limit={10} initialPage={1} />
       </div>
     </main>
   );

@@ -19,7 +19,7 @@ const worker = new Worker(
     const { alertId } = job.data as { alertId: string };
     await connectToDatabase();
     const alert = await Alert.findById(alertId);
-    if (!alert || !alert.isActive) return;
+    if (!alert || alert.status !== "active") return;
 
     // fetch current price
     const { price, marketCap } = await getCurrentStockData(
@@ -84,10 +84,12 @@ const worker = new Worker(
       });
 
       alert.lastTriggeredAt = now;
-      if (alert.frequencyType === "manual") {
-        alert.isActive = false;
-      }
+
+      alert.status =
+        alert.frequencyType === "manual" ? "disabled" : "triggered";
+
       await alert.save();
+      console.log(`✅ Alert ${alert._id} triggered successfully`);
     }
   },
   { connection },

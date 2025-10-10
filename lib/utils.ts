@@ -75,3 +75,7 @@ export function formatMarketCap(
     return num.toString();
   }
 }
+export function calculateChange(current: number, previous: number): number {
+  if (!previous || isNaN(current) || isNaN(previous)) return 0;
+  return ((current - previous) / previous) * 100;
+}

@@ -14,6 +14,7 @@ type AlertFormData = {
   alertType: string;
   conditionType: string;
   frequencyType: string;
+  status: string;
 };
 type CountrySelectProps = {
   name: string;

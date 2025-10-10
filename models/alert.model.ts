@@ -2,6 +2,7 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IAlert extends Document {
+  _id: string;
   userId: string;
   alertName: string;
   stockIdentifier: string;
@@ -9,16 +10,18 @@ export interface IAlert extends Document {
   alertType: "price" | "marketCap";
   conditionType: "greater" | "less" | "equal";
   frequencyType: "once-per-hour" | "once-per-day" | "once-per-minute" | string;
-  isActive: boolean;
+  status: "pending" | "active" | "triggered" | "paused" | "disabled";
   createdAt: Date;
   updatedAt: Date;
   lastTriggeredAt?: Date;
+  shortId: string;
 }
 
 const AlertSchema = new Schema<IAlert>(
   {
     userId: { type: String, required: true, index: true },
     alertName: { type: String, required: true },
+    shortId: { type: String },
     stockIdentifier: { type: String, required: true },
     threshold: { type: Number, required: true },
     alertType: {
@@ -36,9 +39,14 @@ const AlertSchema = new Schema<IAlert>(
       enum: ["once-per-hour", "once-per-day", "once-per-minute"],
       default: "once-per-hour",
     },
-    isActive: { type: Boolean, default: true },
+    status: {
+      type: String,
+      enum: ["pending", "active", "triggered", "paused", "disabled"],
+      default: "pending",
+    },
     lastTriggeredAt: { type: Date },
   },
+
   {
     timestamps: true,
   },

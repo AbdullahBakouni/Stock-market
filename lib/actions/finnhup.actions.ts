@@ -3,6 +3,7 @@
 import { getDateRange, validateArticle, formatArticle } from "../utils.ts";
 import { POPULAR_STOCK_SYMBOLS } from "../constants.ts";
 import { cache } from "react";
+import redis from "../redis/redis.ts";
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 async function fetchJSON<T>(
@@ -266,5 +267,39 @@ export async function getCurrentStockData(
       price: 0,
       marketCap: 0,
     };
+  }
+}
+
+export async function fetchStockLogo(symbol: string): Promise<string | null> {
+  const cacheKey = `stock_logo:${symbol}`;
+  const cached = await redis.get(cacheKey);
+  if (cached) return cached === "null" ? null : cached;
+
+  try {
+    const data = await fetchJSON<{ logo?: string }>(
+      `${FINNHUB_BASE_URL}/stock/profile2?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
+    );
+    const logoUrl = data?.logo || null;
+
+    // Cache logo for 6 hours
+    await redis.set(cacheKey, logoUrl ?? "null", "EX", 21600);
+    return logoUrl;
+  } catch (error) {
+    console.error(`Error fetching logo for ${symbol}:`, error);
+    await redis.set(cacheKey, "null", "EX", 3600); // cache empty result 1h
+    return null;
+  }
+}
+
+export async function fetchStockChange(symbol: string): Promise<number | null> {
+  try {
+    const currentPriceData = await fetchJSON<{ c: number }>(
+      `${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`,
+    );
+    const currentPrice = currentPriceData.c; // Finnhub 'c' = current price
+    return currentPrice;
+  } catch (e) {
+    console.error(`Error fetching logo for ${symbol}:`, e);
+    return null;
   }
 }

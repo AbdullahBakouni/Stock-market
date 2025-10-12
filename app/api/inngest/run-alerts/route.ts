@@ -1,34 +1,32 @@
 export const runtime = "nodejs";
+
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { scheduleAlertCheck } from "@/lib/queues/alertsQueue";
 import { Alert } from "@/models/alert.model";
 
-export default async function handler(req, res) {
+export async function GET() {
   try {
+    console.log("🚀 Running scheduled alerts...");
+
     await connectToDatabase();
 
     const activeAlerts = await Alert.find({ status: "active" });
-
-    if (!activeAlerts || activeAlerts.length === 0) {
-      return res
-        .status(200)
-        .json({ ok: true, message: "No active alerts found" });
-    }
+    console.log(`📊 Found ${activeAlerts.length} active alerts`);
 
     let count = 0;
-
     for (const alert of activeAlerts) {
       await scheduleAlertCheck(alert._id.toString());
       count++;
     }
 
-    res.status(200).json({
+    return NextResponse.json({
       ok: true,
       totalAlerts: count,
-      message: `Scheduled ${count} alerts successfully`,
+      message: `Scheduled ${count} alerts successfully ✅`,
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error scheduling alerts:", err);
-    res.status(500).json({ error: err.message });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

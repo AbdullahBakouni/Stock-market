@@ -1,7 +1,7 @@
 import { alertsQueue } from "./alertsQueue";
 
 export async function cancelAlertCheck(alertId: string) {
-  const jobName = `check-alert:${alertId}`;
+  const jobName = `check-alert-${alertId}`;
   const repeatableJobs = await alertsQueue.getRepeatableJobs();
 
   for (const job of repeatableJobs) {

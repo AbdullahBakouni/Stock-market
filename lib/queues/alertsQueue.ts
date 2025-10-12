@@ -11,7 +11,7 @@ export async function scheduleAlertCheck(
   alertId: string,
   cronOrRepeat: { every?: number; cron?: string } = {},
 ) {
-  const jobName = `check-alert:${alertId}`;
+  const jobName = `check-alert-${alertId}`;
   await alertsQueue.add(
     jobName,
     { alertId },

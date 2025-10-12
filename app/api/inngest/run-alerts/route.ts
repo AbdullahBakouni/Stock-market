@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { scheduleAlertCheck } from "@/lib/queues/alertsQueue";
 import { Alert } from "@/models/alert.model";

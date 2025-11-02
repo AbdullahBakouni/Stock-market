@@ -43,13 +43,18 @@ Stock-market is a full-stack application that enables users to monitor stock mar
 
 ```mermaid
 flowchart TD
-    U[User / Device] --> F[Frontend App]
-    F --> B[Backend API]
-    B --> D[(Database)]
-    B --> S[(Stock Data Stream)]
-    B --> N[(Notifications Service)]
+    U[User or Device] --> F[Frontend - Next.js]
+    F -->|API Requests| B[Next.js server actions]
+    B --> D[(Database - MongoDB)]
+    B --> R[(Redis - BullMQ Queues)]
+    B --> I[(Inngest - Event Workflows)]
+    B --> C[(Cron Jobs - Scheduled Tasks)]
+    B --> N[(Notification Service)]
+    B --> S[(Stock Market Data Stream API)]
     S --> D
-    B --> U
+    R --> B
+    I --> B
+    C --> B
     N --> U
 ```
 # ⚙️ Installation

@@ -21,10 +21,10 @@ Stock-market is a full-stack application that enables users to monitor stock mar
 | Layer             | Technology                       |
 |-------------------|----------------------------------|
 | Frontend          | Next.js, React, Tailwind CSS     |
-| Backend           | Node.js, Express (or similar)    |
-| Data / Streaming  | WebSockets / SSE, REST APIs      |
-| Database          | PostgreSQL (or other SQL)        |
-| Alerts / Notifications | Email, Push, WebHooks       |
+| Backend           | Next.js Server Actions    |
+| Data / Streaming  | SSE, REST APIs      |
+| Database          | PostgreSQL        |
+| Alerts / Notifications | Email, Push, WebHooks, Cron Jobs       |
 | Deployment        | Docker, Kubernetes, CI/CD        |
 
 ---
@@ -156,7 +156,7 @@ Open a Pull Request and describe your changes.
 
 # 📜 License
 
-Licensed under the MIT License © 2025 https://github.com/AbdullahBakouni
+Licensed under the MIT License © 2025 [Abdullah Bakouni](https://github.com/AbdullahBakouni)
 
 # 🌍 Visit My Website
 
